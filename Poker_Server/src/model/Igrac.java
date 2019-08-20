@@ -1,18 +1,22 @@
 package model;
 
 public class Igrac {
-
+	private String korisnickoIme;
+	private String ime;
+	private String prezime;
+	private String password;
 	private Karta prvaKarta;
 	private Karta drugaKarta;
 	private Ruka ruka;
-	private double novac;
+	private double novac=5000;
 	private double ulog;
-	public Igrac(Karta prvaKarta, Karta drugaKarta,double novac) {
+	
+	public Igrac(String ime, String password) {
 		super();
-		this.prvaKarta = prvaKarta;
-		this.drugaKarta = drugaKarta;
-		this.novac=novac;
+		this.korisnickoIme = ime;
+		this.password = password;
 	}
+
 	public Igrac(){
 		
 	}
@@ -45,6 +49,59 @@ public class Igrac {
 	}
 	public void setUlog(double ulog) {
 		this.ulog = ulog;
+	}
+	public String getIme() {
+		return ime;
+	}
+	public void setIme(String ime) {
+		this.ime = ime;
+	}
+	public String getPassword() {
+		return password;
+	}
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((korisnickoIme == null) ? 0 : korisnickoIme.hashCode());
+		return result;
+	}
+
+	public String getKorisnickoIme() {
+		return korisnickoIme;
+	}
+
+	public void setKorisnickoIme(String korisnickoIme) {
+		this.korisnickoIme = korisnickoIme;
+	}
+
+	public String getPrezime() {
+		return prezime;
+	}
+
+	public void setPrezime(String prezime) {
+		this.prezime = prezime;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Igrac other = (Igrac) obj;
+		if (korisnickoIme == null) {
+			if (other.korisnickoIme != null)
+				return false;
+		} else if (!korisnickoIme.equals(other.korisnickoIme))
+			return false;
+		return true;
 	}
 	
 	

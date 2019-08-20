@@ -5,7 +5,7 @@ import java.util.List;
 
 public class Igra {
 
-	private List<Igrac> igraci=new LinkedList<Igrac>();
+	private  List<Igrac> igraci=new LinkedList<Igrac>();
 	private Spil spil=new Spil();
 	private Karta[] karteNaStolu=new Karta[5];
 	private int brojKarataNaStolu=0;
@@ -49,4 +49,17 @@ public class Igra {
 			pobednici[n].setNovac(pobednici[i].getNovac()+dob);
 		}
 	}
+	public void dodajIgraca(Igrac i){
+		this.igraci.add(i);
+	}
+	public void izbrisiIgraca(Igrac i){
+		this.igraci.remove(i);
+	}
+	public boolean imaIgraca(Igrac i){
+		return this.igraci.contains(i);
+	}
+	public List<Igrac> getIgraci() {
+		return igraci;
+	}
+	
 }
