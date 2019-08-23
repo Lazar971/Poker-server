@@ -10,7 +10,7 @@ public class Igrac {
 	private Ruka ruka;
 	private double novac=5000;
 	private double ulog;
-	
+	private boolean aktivan;
 	public Igrac(String ime, String password) {
 		super();
 		this.korisnickoIme = ime;
@@ -61,6 +61,14 @@ public class Igrac {
 	}
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	public boolean isAktivan() {
+		return aktivan;
+	}
+
+	public void setAktivan(boolean aktivan) {
+		this.aktivan = aktivan;
 	}
 
 	@Override

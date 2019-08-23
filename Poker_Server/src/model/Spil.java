@@ -10,7 +10,6 @@ public class Spil {
 	
 	public Spil(){
 		napuniSpil();
-		promesaj();
 	}
 	public void napuniSpil(){
 		
@@ -22,6 +21,7 @@ public class Spil {
 				
 			}
 		}
+		promesaj();
 		
 	}
 	public void promesaj(){

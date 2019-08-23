@@ -27,7 +27,7 @@ public class KlijentVeza extends Thread {
 	@Override
 	public void run() {
 		try{
-			System.out.println("Pocetak");
+			
 			ulaz=new BufferedReader(new InputStreamReader(soket.getInputStream()));
 			izlaz=new PrintStream(soket.getOutputStream());
 			
@@ -50,18 +50,16 @@ public class KlijentVeza extends Thread {
 		}catch(Exception ex){
 			Server.igra.izbrisiIgraca(igrac);
 			Server.klijenti.remove(this);
-			System.out.println("Obrisano");
-			Server.obavestiONovomKlijentu();
+			
+			Server.azurirajKlijente();
 		}
 		
 		
 	}
 	private void dodajIgracaRegister()throws IOException {
-		System.out.println("Pre primanja");
 		String[] podaci=ulaz.readLine().split(" ");
-		System.out.println(podaci[0]+" "+podaci[1]);
 		
-		Igrac i=new Igrac(podaci[0], podaci[1]);
+		Igrac i=new Igrac(podaci[2], podaci[3]);
 		izlaz.println("REGISTER");
 		//Baza
 		if(Server.igra.imaIgraca(i)){
@@ -72,11 +70,26 @@ public class KlijentVeza extends Thread {
 			izlaz.println("2");
 			return;
 		}
+		i.setIme(podaci[0]);
+		i.setPrezime(podaci[1]);
 		izlaz.println("0");
 		izlaz.println(i.getNovac());
+		i.setAktivan(!Server.igraJeUToku);
 		this.igrac=i;
 		Server.igra.dodajIgraca(i);
-		Server.obavestiONovomKlijentu();
+		if(Server.brojKojiImajuNovac()>1){
+			synchronized (this) {
+				try {
+					System.out.println("Klijent u sync");
+					notify();
+					System.out.println("Klijent notify");
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+		Server.azurirajKlijente();
 		
 	}
 	private void dodajIgracaLogin()throws IOException{
@@ -101,11 +114,23 @@ public class KlijentVeza extends Thread {
 			izlaz.println("3");
 			return;
 		}
+		i.setAktivan(!Server.igraJeUToku);
 		this.igrac=i;
 		izlaz.println("0");
 		Server.igra.dodajIgraca(igrac);
-		Server.obavestiONovomKlijentu();
-		
+		Server.azurirajKlijente();
+		if(Server.brojKojiImajuNovac()>1){
+			synchronized (this) {
+				try {
+					
+					notify();
+					
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
 		
 		
 	}
@@ -118,15 +143,28 @@ public class KlijentVeza extends Thread {
 				continue;
 			}
 			izlaz.println("0");
-			izlaz.println(igr.getPrvaKarta().getBroj()+" "+igr.getPrvaKarta().getZnak());
+			izlaz.println((igr.equals(this.igrac))?igr.getPrvaKarta().getBroj()+" "+igr.getPrvaKarta().getZnak():"0 0");
 			if(igr.getDrugaKarta()==null){
 				izlaz.println("1");
 				continue;
 			}
 			izlaz.println("0");
-			izlaz.println(igr.getDrugaKarta().getBroj()+" "+igr.getDrugaKarta().getZnak());
+			izlaz.println((igr.equals(this.igrac))?igr.getDrugaKarta().getBroj()+" "+igr.getDrugaKarta().getZnak():"0 0");
 		}
 		
+	}
+	
+	
+	
+	
+	
+	
+	
+	public Igrac getIgrac() {
+		return igrac;
+	}
+	public void setIgrac(Igrac igrac) {
+		this.igrac = igrac;
 	}
 	public BufferedReader getUlaz() {
 		return ulaz;
@@ -134,5 +172,6 @@ public class KlijentVeza extends Thread {
 	public PrintStream getIzlaz() {
 		return izlaz;
 	}
+	
 	
 }

@@ -3,6 +3,8 @@ package model;
 import java.util.LinkedList;
 import java.util.List;
 
+import main.Server;
+
 public class Igra {
 
 	private  List<Igrac> igraci=new LinkedList<Igrac>();
@@ -17,7 +19,7 @@ public class Igra {
 			ig.setDrugaKarta(spil.izvuciKartu());
 		}
 	}
-	public void podeliDobitak(){
+	public synchronized void podeliDobitak(){
 		
 		for(Igrac igrac:igraci){
 			Karta[] karte=new Karta[7];
@@ -48,6 +50,7 @@ public class Igra {
 		for(int i=0;i<n;i++){
 			pobednici[n].setNovac(pobednici[i].getNovac()+dob);
 		}
+		Server.igraJeUToku=false;
 	}
 	public void dodajIgraca(Igrac i){
 		this.igraci.add(i);
@@ -61,5 +64,14 @@ public class Igra {
 	public List<Igrac> getIgraci() {
 		return igraci;
 	}
+	public double getUlog() {
+		return ulog;
+	}
+	public void setUlog(double ulog) {
+		this.ulog = ulog;
+	}
 	
+	public Spil getSpil(){
+		return this.spil;
+	}
 }
