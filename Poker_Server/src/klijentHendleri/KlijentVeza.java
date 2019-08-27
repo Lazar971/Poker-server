@@ -77,18 +77,7 @@ public class KlijentVeza extends Thread {
 		i.setAktivan(!Server.igraJeUToku);
 		this.igrac=i;
 		Server.igra.dodajIgraca(i);
-		if(Server.brojKojiImajuNovac()>1){
-			synchronized (this) {
-				try {
-					System.out.println("Klijent u sync");
-					notify();
-					System.out.println("Klijent notify");
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
+		
 		Server.azurirajKlijente();
 		
 	}

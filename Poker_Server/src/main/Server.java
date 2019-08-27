@@ -21,7 +21,7 @@ public class Server extends Thread {
 		
 		try(ServerSocket server=new ServerSocket(port)){
 			Server s=new Server();
-			s.start();
+			//s.start();
 			System.out.println("Server radi");
 			while(true){
 				Socket soket=server.accept();
@@ -48,16 +48,9 @@ public class Server extends Thread {
 	public void run() {
 		while(true){
 			System.out.println("Pre cekanja");
-			synchronized (this) {
+			
 				if(brojKojiImajuNovac()<2)
-					try {
-						System.out.println("U sinc");
-						wait();
-						System.out.println("Posle cekanja");
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+					continue;
 				System.out.println("Igra pocinje");
 				inicijalizujIgru();
 				primiUloge();
@@ -69,7 +62,7 @@ public class Server extends Thread {
 				primiUloge();
 				podeliDobitkeKlijentima();
 				igraJeUToku=false;
-			}
+			
 		}
 	}
 	public static void primiUloge(){
@@ -142,6 +135,8 @@ public class Server extends Thread {
 	
 
 	public static int brojKojiImajuNovac(){
+		if(klijenti==null)
+			return 0;
 		int n=0;
 		for(KlijentVeza v:klijenti){
 			if(v.getIgrac().isAktivan() && v.getIgrac().getNovac()>50)
