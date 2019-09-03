@@ -20,6 +20,8 @@ public class Igrac {
 	public Igrac(){
 		
 	}
+
+	
 	public Karta getPrvaKarta() {
 		return prvaKarta;
 	}

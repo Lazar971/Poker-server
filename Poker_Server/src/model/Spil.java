@@ -16,7 +16,7 @@ public class Spil {
 		int n=0;
 		brojKarata=52;
 		for(int i =0;i<4;i++){
-			for(int j=1;j<14;j++){
+			for(int j=2;j<15;j++){
 				karte[n++]=new Karta(j, i);
 				
 			}

@@ -28,6 +28,7 @@ public class Igra {
 			karte[5]=igrac.getPrvaKarta();
 			karte[6]=igrac.getDrugaKarta();
 			igrac.setRuka(kalkulator.dajRuku(karte));
+			igrac.setUlog(0);
 		}
 		Igrac[] pobednici=new Igrac[10];
 		int n=0;
@@ -46,11 +47,25 @@ public class Igra {
 		if(n==0){
 			return;
 		}
+		System.out.println("Broj pobednika: "+n+" Ukupan ulog: "+ulog);
 		double dob=ulog/n;
 		for(int i=0;i<n;i++){
-			pobednici[n].setNovac(pobednici[i].getNovac()+dob);
+			pobednici[i].setNovac(pobednici[i].getNovac()+dob);
 		}
-		Server.igraJeUToku=false;
+		
+	}
+	
+	public void pobednikFold(){
+		if(brojAktivnih()>1)
+			return;
+		for(Igrac i:igraci){
+			i.setUlog(0);
+			if(i.isAktivan()){
+				i.setNovac(i.getNovac()+ulog);
+			}
+		}
+		
+		ulog=0;
 	}
 	public void dodajIgraca(Igrac i){
 		this.igraci.add(i);
@@ -73,5 +88,23 @@ public class Igra {
 	
 	public Spil getSpil(){
 		return this.spil;
+	}
+	public void setIgraci(List<Igrac> igraci) {
+		this.igraci = igraci;
+	}
+	public void dodajKartuNaSto(Karta k){
+		karteNaStolu[brojKarataNaStolu++]=k;
+	}
+	public void obrisiKarte(){
+		
+		brojKarataNaStolu=0;
+	}
+	public int brojAktivnih(){
+		int a=0;
+		for(Igrac i:igraci){
+			if(i.isAktivan())
+				a++;
+		}
+		return a;
 	}
 }

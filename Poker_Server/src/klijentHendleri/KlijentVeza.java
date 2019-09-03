@@ -2,12 +2,9 @@ package klijentHendleri;
 
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.net.Socket;
 
 import main.Server;
@@ -18,45 +15,54 @@ public class KlijentVeza extends Thread {
 
 	private Socket soket;
 	private Igrac igrac;
+	public String trenutnaPoruka;
 	BufferedReader ulaz;
 	PrintStream izlaz;
 	public KlijentVeza(Socket s){
 		soket=s;
-		
-	}
-	@Override
-	public void run() {
-		try{
-			
+		try {
 			ulaz=new BufferedReader(new InputStreamReader(soket.getInputStream()));
 			izlaz=new PrintStream(soket.getOutputStream());
 			
-			
-			while(true){
-				String akcija=ulaz.readLine();
-				
-				
-				if(akcija.equals("LOGIN")){
-					dodajIgracaLogin();
-					continue;
-				}
-				if(akcija.equals("REGISTER")){
-					
-					dodajIgracaRegister();
-					continue;
-				}
-			}
-			
-		}catch(Exception ex){
-			Server.igra.izbrisiIgraca(igrac);
-			Server.klijenti.remove(this);
-			
-			Server.azurirajKlijente();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
+	}
+	@Override
+	public void run() {
+		
+			try {
+				
+				while (true) {
+				String akcija = ulaz.readLine();
+				trenutnaPoruka = akcija;
+				Server.sinh.obavestiODobromOdgovoru(this);
+				if (akcija.equals("LOGIN")) {
+					dodajIgracaLogin();
+
+				}
+				if (akcija.equals("REGISTER")) {
+
+					dodajIgracaRegister();
+
+				}
+				
+				}
+			} catch (Exception ex) {
+				Server.igra.izbrisiIgraca(igrac);
+				Server.klijenti=Server.sinh.obrisiKlijenta(this);
+				System.out.println("Izbirsan klijent");
+				
+				Server.azurirajKlijente();
+			} 
+		
 		
 		
 	}
-	private void dodajIgracaRegister()throws IOException {
+	
+	private synchronized void dodajIgracaRegister()throws IOException {
+		
+			
 		String[] podaci=ulaz.readLine().split(" ");
 		
 		Igrac i=new Igrac(podaci[2], podaci[3]);
@@ -76,11 +82,39 @@ public class KlijentVeza extends Thread {
 		izlaz.println(i.getNovac());
 		i.setAktivan(!Server.igraJeUToku);
 		this.igrac=i;
-		Server.igra.dodajIgraca(i);
 		
-		Server.azurirajKlijente();
+		
+		
+		Server.sinh.oslobodi();
+		
+		
 		
 	}
+	
+	public synchronized void posaljiIgrace(){
+		//System.out.println("salje igraca");
+		izlaz.println(Server.igra.getIgraci().size());
+		for(Igrac igr:Server.igra.getIgraci()){
+			//System.out.println(igr.getKorisnickoIme()+" "+igr.getNovac()+" "+igr.getUlog()+" "+igr.isAktivan());
+			izlaz.println(igr.getKorisnickoIme()+" "+igr.getNovac()+" "+igr.getUlog());
+			if(igr.getPrvaKarta()==null){
+				izlaz.println("1");
+				continue;
+			}
+			izlaz.println("0");
+			izlaz.println((igr.equals(this.igrac))?igr.getPrvaKarta().getBroj()+" "+igr.getPrvaKarta().getZnak():"0 0");
+			if(igr.getDrugaKarta()==null){
+				izlaz.println("1");
+				continue;
+			}
+			izlaz.println("0");
+			izlaz.println((igr.equals(this.igrac))?igr.getDrugaKarta().getBroj()+" "+igr.getDrugaKarta().getZnak():"0 0");
+			
+		}
+	}
+	
+	
+	
 	private void dodajIgracaLogin()throws IOException{
 		String[] podaci=ulaz.readLine().split(" ");
 		Igrac i=new Igrac(podaci[0], podaci[1]);
@@ -108,47 +142,36 @@ public class KlijentVeza extends Thread {
 		izlaz.println("0");
 		Server.igra.dodajIgraca(igrac);
 		Server.azurirajKlijente();
-		if(Server.brojKojiImajuNovac()>1){
-			synchronized (this) {
-				try {
-					
-					notify();
-					
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
 		
 		
-	}
-	public void posaljiIgrace(){
-		izlaz.println(Server.igra.getIgraci().size());
-		for(Igrac igr:Server.igra.getIgraci()){
-			izlaz.println(igr.getKorisnickoIme()+" "+igr.getNovac()+" "+igr.getUlog());
-			if(igr.getPrvaKarta()==null){
-				izlaz.println("1");
-				continue;
-			}
-			izlaz.println("0");
-			izlaz.println((igr.equals(this.igrac))?igr.getPrvaKarta().getBroj()+" "+igr.getPrvaKarta().getZnak():"0 0");
-			if(igr.getDrugaKarta()==null){
-				izlaz.println("1");
-				continue;
-			}
-			izlaz.println("0");
-			izlaz.println((igr.equals(this.igrac))?igr.getDrugaKarta().getBroj()+" "+igr.getDrugaKarta().getZnak():"0 0");
-		}
 		
 	}
 	
 	
 	
-	
-	
-	
-	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((igrac == null) ? 0 : igrac.hashCode());
+		return result;
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		KlijentVeza other = (KlijentVeza) obj;
+		if (igrac == null) {
+			if (other.igrac != null)
+				return false;
+		} else if (!igrac.equals(other.igrac))
+			return false;
+		return true;
+	}
 	public Igrac getIgrac() {
 		return igrac;
 	}
