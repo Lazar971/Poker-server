@@ -272,7 +272,7 @@ public class Server extends Thread {
 			return;
 		for(KlijentVeza klijent:klijenti){
 			klijent.getIzlaz().println("TRENUTNI");
-			klijent.getIzlaz().println(veza.getIgrac().getKorisnickoIme()+" "+ulog);
+			klijent.getIzlaz().println(veza.getIgrac().getKorisnickoIme()+" "+ulog+" "+igra.getUlog());
 		}
 	}
 }
