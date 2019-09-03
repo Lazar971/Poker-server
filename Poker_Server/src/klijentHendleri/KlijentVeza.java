@@ -53,7 +53,7 @@ public class KlijentVeza extends Thread {
 				Server.klijenti=Server.sinh.obrisiKlijenta(this);
 				System.out.println("Izbirsan klijent");
 				
-				Server.azurirajKlijente();
+				Server.azurirajKlijente(false);
 			} 
 		
 		
@@ -91,7 +91,7 @@ public class KlijentVeza extends Thread {
 		
 	}
 	
-	public synchronized void posaljiIgrace(){
+	public synchronized void posaljiIgrace(boolean b){
 		//System.out.println("salje igraca");
 		izlaz.println(Server.igra.getIgraci().size());
 		for(Igrac igr:Server.igra.getIgraci()){
@@ -102,13 +102,13 @@ public class KlijentVeza extends Thread {
 				continue;
 			}
 			izlaz.println("0");
-			izlaz.println((igr.equals(this.igrac))?igr.getPrvaKarta().getBroj()+" "+igr.getPrvaKarta().getZnak():"0 0");
+			izlaz.println((!b || igr.equals(this.igrac))?igr.getPrvaKarta().getBroj()+" "+igr.getPrvaKarta().getZnak():"0 0");
 			if(igr.getDrugaKarta()==null){
 				izlaz.println("1");
 				continue;
 			}
 			izlaz.println("0");
-			izlaz.println((igr.equals(this.igrac))?igr.getDrugaKarta().getBroj()+" "+igr.getDrugaKarta().getZnak():"0 0");
+			izlaz.println((!b ||igr.equals(this.igrac))?igr.getDrugaKarta().getBroj()+" "+igr.getDrugaKarta().getZnak():"0 0");
 			
 		}
 	}
@@ -141,7 +141,7 @@ public class KlijentVeza extends Thread {
 		this.igrac=i;
 		izlaz.println("0");
 		Server.igra.dodajIgraca(igrac);
-		Server.azurirajKlijente();
+		Server.azurirajKlijente(false);
 		
 		
 		

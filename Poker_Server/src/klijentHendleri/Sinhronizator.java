@@ -59,9 +59,10 @@ public class Sinhronizator {
 		notifyAll();
 	}
 	public synchronized void pocniIgru(){
+		System.out.println("Igra je moguca? "+Server.igraJeMoguca);
 		while(!Server.igraJeMoguca){
 			try {
-				System.out.println("Ceka se");
+				
 				wait();
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
@@ -77,7 +78,7 @@ public class Sinhronizator {
 	}
 	public synchronized void azurirajIgrajeMoguca(boolean b){
 		Server.igraJeMoguca=b;
-		System.out.println("Igra je moguca: "+b);
+		
 		
 		notifyAll();
 	}
@@ -87,7 +88,6 @@ public class Sinhronizator {
 		while(!poruka.equals("CHECK")&&!poruka.equals("FOLD")&&!a.equals("RAISE")){
 			try {
 				wait();
-				System.out.println("Ne ceka vise");
 				poruka=veza.trenutnaPoruka;
 				a=poruka.split(" ")[0];
 			} catch (InterruptedException e) {
@@ -101,8 +101,15 @@ public class Sinhronizator {
 	public synchronized void obavestiODobromOdgovoru(KlijentVeza veza){
 		String poruka=veza.trenutnaPoruka;
 		String a=poruka.split(" ")[0];
-		System.out.println("Obavesti o poruci, poruka: "+poruka);
 		if(poruka.equals("CHECK")|| poruka.equals("FOLD")|| a.equals("RAISE"))
 			notifyAll();
+	}
+	public synchronized void cekaj(int del){
+		try {
+			wait(del);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

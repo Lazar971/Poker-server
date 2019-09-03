@@ -20,6 +20,7 @@ public class Server extends Thread {
 	public static Sinhronizator sinh=new Sinhronizator();
 	public static boolean igraJeUToku=false;
 	public static boolean igraJeMoguca=false;
+	public static int n=0;
 	public static void main(String[] args) {
 		int port=11500;
 		
@@ -38,7 +39,7 @@ public class Server extends Thread {
 				sinh.zauzetiKlijenti=true;
 				klijenti=sinh.dodajKlijenta(veza);
 				System.out.println("Server main");
-				Server.azurirajKlijente();
+				Server.azurirajKlijente(true);
 			}
 			
 		}catch(IOException ex){
@@ -47,18 +48,16 @@ public class Server extends Thread {
 		
 	}
 	
-	public  static void azurirajKlijente(){
+	public  static void azurirajKlijente(boolean b){
 		List<Igrac> igr=new LinkedList<Igrac>();
-		System.out.println("Broj igraca: "+klijenti.size());
 		for(KlijentVeza veza:klijenti){
 			igr.add(veza.getIgrac());
 		}
 		igra.setIgraci(igr);
-		System.out.println("Broj igraca igra: "+igra.getIgraci().size());
 		for(KlijentVeza veza:klijenti){
 			
 			veza.getIzlaz().println("UPDATE");
-			veza.posaljiIgrace();
+			veza.posaljiIgrace(b);
 		}
 		Server.sinh.azurirajIgrajeMoguca(Server.brojKojiImajuNovac()>1 && !Server.igraJeUToku);
 		
@@ -69,37 +68,39 @@ public class Server extends Thread {
 				sinh.pocniIgru();
 				igraJeUToku = true;
 				inicijalizujIgru();
-				System.out.println("pre primi uloge");
 				if(primiUloge()){
 					dobitakFold();
+					sinh.cekaj(10000);
 					obrisiKarte();
-					igraJeUToku = false;
+					
 					continue;
 				}
 				izvuciKarte(3);
 				if(primiUloge()){
 					dobitakFold();
+					sinh.cekaj(10000);
 					obrisiKarte();
-					igraJeUToku = false;
+					
 					continue;
 				}
 				izvuciKarte(1);
 				if(primiUloge()){
 					dobitakFold();
+					sinh.cekaj(10000);
 					obrisiKarte();
-					igraJeUToku = false;
 					continue;
 				}
 				izvuciKarte(1);
 				if(primiUloge()){
 					dobitakFold();
+					sinh.cekaj(10000);
 					obrisiKarte();
-					igraJeUToku = false;
 					continue;
 				}
 				podeliDobitkeKlijentima();
+				sinh.cekaj(20000);
 				obrisiKarte();
-				igraJeUToku = false;
+				
 			}
 			
 
@@ -110,7 +111,9 @@ public class Server extends Thread {
 			veza.getIgrac().setDrugaKarta(null);
 			veza.getIzlaz().println("KARTE");
 			veza.getIzlaz().println(-1);
-			azurirajKlijente();
+			azurirajKlijente(true);
+			igraJeUToku=false;
+			igraJeMoguca=brojKojiImajuNovac()>1;
 		}
 		
 	}
@@ -118,70 +121,74 @@ public class Server extends Thread {
 	public boolean primiUloge(){
 
 		double visinaUloga=0;
-		Igrac i=null;
-		KlijentVeza[] veza=new KlijentVeza[6];
-		try {
-			
-			veza=klijenti.toArray(veza);
-			
-			int n=0;
+		
+		int brojIgraca=0;
+		KlijentVeza[] veza=new KlijentVeza[klijenti.size()];
+		veza=klijenti.toArray(veza);
+		System.out.println("Duzina niza: "+veza.length);	
 			while(true){
 				try {
-					if((veza[n]==null && i==null)||(veza[n]!=null && veza[n].getIgrac().equals(i)))
+					if(brojIgraca==veza.length)
 						break;
-					if(n==veza.length || veza[n]==null)
+					if(n>=veza.length ){
 						n=0;
+					}
+						
+					if(!veza[n].getIgrac().isAktivan()){
+						brojIgraca++;
+						n++;
+						continue;
+					}
 					obavestiOUloguITrenutnomIgracu(veza[n], visinaUloga);
-					System.out.println("Pre slanja uloga");
+					
 					veza[n].getIzlaz().flush();
 					veza[n].getIzlaz().println("ULOG");
-					System.out.println("Poslat ulog");
+					
 					veza[n].getIzlaz().println(visinaUloga);
 					
 					String odgovor=sinh.cekajNaDobarOdgovor(veza[n]);
 					veza[n].trenutnaPoruka="";
-					System.out.println("Primljen ulog: "+odgovor);
 					if(odgovor.equals("FOLD")){
 						veza[n].getIgrac().setAktivan(false);
-						
+						brojIgraca++;
+						n++;
 						if(igra.brojAktivnih()==1){
 							return true;
 						}
 					}
 					if(odgovor.equals("CHECK")){
-						double u=veza[n].getIgrac().getUlog()+visinaUloga;
+						double u=visinaUloga;
 						veza[n].getIgrac().setUlog(u);
 						veza[n].getIgrac().setNovac(veza[n].getIgrac().getNovac()-visinaUloga);
-						igra.setUlog(igra.getUlog()+visinaUloga);
+						igra.setUlog(igra.getUlog()+u);
+						brojIgraca++;
+						n++;
 						continue;
 					}
 					String a=odgovor.split(" ")[0];
 					if(a.equals("RAISE")){
 						String[] podaci=odgovor.split(" ");
-						i=veza[n].getIgrac();
+						brojIgraca=1;
 						visinaUloga=Double.parseDouble(podaci[1]);
 						double u=veza[n].getIgrac().getUlog()+visinaUloga;
 						veza[n].getIgrac().setUlog(u);
 						veza[n].getIgrac().setNovac(veza[n].getIgrac().getNovac()-visinaUloga);
 						igra.setUlog(igra.getUlog()+visinaUloga);
+						
+						n++;
 						continue;
 					}
-					
+					brojIgraca++;
+					n++;
 				} catch (Exception e) {
-					if(veza[n]!=null)
+					if(n<veza.length && veza[n]!=null)
 						veza[n].getIgrac().setAktivan(false);
 					e.printStackTrace();
 				}finally{
 					
-					Server.azurirajKlijente();
-					n++;
+					Server.azurirajKlijente(true);
 				}
-				
 			}
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		return false;
 	}
 
@@ -190,28 +197,28 @@ public class Server extends Thread {
 		for(KlijentVeza veza:klijenti){
 			for(Igrac igr:igra.getIgraci())
 				if(igr.equals(veza.getIgrac())){
-					System.out.println("Naso igraca");
+					
 					veza.setIgrac(igr);
 					continue;
 				}
 			
 		}
 		
-		Server.azurirajKlijente();
+		Server.azurirajKlijente(false);
 	}
 	private static void dobitakFold(){
 		igra.pobednikFold();
 		for(KlijentVeza veza:klijenti){
 			for(Igrac igr:igra.getIgraci())
 				if(igr.equals(veza.getIgrac())){
-					System.out.println("Naso igraca");
+					
 					veza.setIgrac(igr);
 					continue;
 				}
 			
 		}
 		
-		Server.azurirajKlijente();
+		Server.azurirajKlijente(true);
 	}
 	private synchronized static void podeliKarteKlijentima(){
 			igra.getSpil().napuniSpil();
@@ -224,7 +231,7 @@ public class Server extends Thread {
 				klijent.getIgrac().setDrugaKarta(k);
 			}
 			
-			Server.azurirajKlijente();
+			Server.azurirajKlijente(true);
 		
 	}
 	public synchronized static void izvuciKarte(int a){
@@ -256,6 +263,7 @@ public class Server extends Thread {
 	public synchronized void inicijalizujIgru(){
 		
 		igra=new Igra();
+		n=0;
 		for(KlijentVeza klijent:klijenti){
 			if(klijent.getIgrac()==null || !klijent.getIgrac().isAktivan() || klijent.getIgrac().getNovac()<50)
 				continue;
